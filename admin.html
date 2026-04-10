@@ -861,9 +861,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<!-- Firebase SDK (async, tidak memblokir loading) -->
+<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
 // ===== FIREBASE CONFIGURATION =====
@@ -882,9 +882,18 @@ const FIREBASE_CONFIG = {
 // ===== FIREBASE INIT =====
 let firebaseDB = null;
 let firebaseReady = false;
+const _isFirebaseConfigured = FIREBASE_CONFIG.apiKey !== "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
 function initFirebase() {
+  if (!_isFirebaseConfigured) {
+    console.warn('[Firebase] ⏭️ Config belum diisi, dilewati');
+    return;
+  }
   try {
+    if (typeof firebase === 'undefined') {
+      console.warn('[Firebase] ⏭️ SDK belum dimuat, dilewati');
+      return;
+    }
     if (!firebase.apps.length) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
@@ -893,7 +902,6 @@ function initFirebase() {
     console.log('[Firebase] ✅ Admin terhubung');
   } catch (err) {
     console.warn('[Firebase] ⚠️ Gagal terhubung:', err.message);
-    console.warn('[Firebase] Admin menggunakan localStorage sebagai fallback');
   }
 }
 
