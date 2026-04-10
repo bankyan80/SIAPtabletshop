@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SIAP Tablet Shop - Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent;scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:#000;color:#fff;
+  overflow:hidden;
+  height:100vh;height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input{font-family:inherit;border:none;outline:none;background:none;color:#fff}
+a{text-decoration:none;color:inherit}
+img,video{display:block;max-width:100%}
+
+/* ===== CSS VARIABLES ===== */
+:root{
+  --tiktok-red:#FE2C55;
+  --tiktok-red-dark:#d4213f;
+  --cta-blue:#1DA1F2;
+  --bg:#000;
+  --bg-elevated:#1a1a1a;
+  --bg-overlay:rgba(0,0,0,0.6);
+  --text-primary:#fff;
+  --text-secondary:rgba(255,255,255,0.7);
+  --text-muted:rgba(255,255,255,0.45);
+  --border-color:rgba(255,255,255,0.1);
+  --nav-height:56px;
+  --header-height:52px;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --card-radius:0px;
+  --transition-fast:0.15s ease;
+  --transition-normal:0.3s ease;
+}
+
+/* ===== LOADING OVERLAY ===== */
+#loading-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity 0.4s ease,visibility 0.4s ease;
+}
+#loading-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loading-spinner{
+  width:40px;height:40px;
+  border:3px solid rgba(254,44,85,0.2);
+  border-top-color:var(--tiktok-red);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-secondary);font-weight:500}
+
+/* ===== HEADER ===== */
+#header{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-height);z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.4) 70%,transparent 100%);
+  transition:background var(--transition-normal);
+}
+#header.solid{background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.header-left,.header-right{display:flex;align-items:center;gap:8px}
+.header-logo{font-size:18px;font-weight:800;letter-spacing:-0.3px}
+.header-logo span{color:var(--tiktok-red)}
+.header-btn{
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  transition:background var(--transition-fast);
+}
+.header-btn:active{background:rgba(255,255,255,0.1)}
+.header-btn svg{width:22px;height:22px}
+
+/* ===== SEARCH OVERLAY ===== */
+#search-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.97);
+  display:flex;flex-direction:column;
+  transform:translateY(-100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+}
+#search-overlay.open{transform:translateY(0)}
+.search-header{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border-color);
+  padding-top:calc(12px + env(safe-area-inset-top,0px));
+}
+.search-back{
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.search-back svg{width:24px;height:24px}
+.search-input-wrap{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--bg-elevated);
+  border-radius:10px;padding:0 12px;height:40px;
+}
+.search-input-wrap svg{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+#search-input{
+  flex:1;height:100%;font-size:15px;color:#fff;
+  background:transparent;
+}
+#search-input::placeholder{color:var(--text-muted)}
+.search-results{
+  flex:1;overflow-y:auto;padding:8px 0;
+  -webkit-overflow-scrolling:touch;
+}
+.search-result-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;
+  transition:background var(--transition-fast);
+}
+.search-result-item:active{background:rgba(255,255,255,0.05)}
+.search-result-thumb{
+  width:56px;height:56px;border-radius:8px;object-fit:cover;
+  background:var(--bg-elevated);flex-shrink:0;
+}
+.search-result-info{flex:1;min-width:0}
+.search-result-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-result-price{font-size:13px;color:var(--tiktok-red);font-weight:700;margin-top:2px}
+.search-empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px}
+
+/* ===== SORT BOTTOM SHEET ===== */
+#sort-overlay{
+  position:fixed;inset:0;z-index:150;
+  background:rgba(0,0,0,0.5);
+  opacity:0;visibility:hidden;
+  transition:opacity 0.3s ease,visibility 0.3s ease;
+}
+#sort-overlay.open{opacity:1;visibility:visible}
+#sort-sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:151;
+  background:var(--bg-elevated);
+  border-radius:16px 16px 0 0;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:var(--safe-bottom);
+  max-height:70vh;
+}
+#sort-sheet.open{transform:translateY(0)}
+.sort-handle{
+  width:36px;height:4px;background:rgba(255,255,255,0.2);
+  border-radius:2px;margin:10px auto 0;
+}
+.sort-title{
+  font-size:16px;font-weight:700;
+  padding:16px 20px 8px;
+}
+.sort-option{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  font-size:15px;font-weight:500;
+  color:var(--text-secondary);
+  transition:background var(--transition-fast);
+}
+.sort-option:active{background:rgba(255,255,255,0.05)}
+.sort-option.active{color:var(--tiktok-red)}
+.sort-option svg{width:20px;height:20px;opacity:0;transition:opacity var(--transition-fast)}
+.sort-option.active svg{opacity:1}
+.sort-cancel{
+  margin:8px 16px 12px;
+  padding:14px;
+  background:rgba(255,255,255,0.06);
+  border-radius:12px;
+  font-size:15px;font-weight:600;
+  text-align:center;
+}
+
+/* ===== CATEGORY BAR ===== */
+#category-bar{
+  position:fixed;
+  bottom:calc(var(--nav-height) + var(--safe-bottom) + 6px);
+  left:0;right:0;z-index:90;
+  padding:0 8px;
+  transform:translateY(200%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:4px;
+}
+#category-bar.visible{transform:translateY(0)}
+.category-scroll{
+  display:flex;gap:8px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  padding:4px 4px 8px;
+}
+.category-scroll::-webkit-scrollbar{display:none}
+.category-chip{
+  flex-shrink:0;
+  padding:8px 16px;
+  background:rgba(255,255,255,0.08);
+  border-radius:20px;
+  font-size:13px;font-weight:600;
+  color:var(--text-secondary);
+  white-space:nowrap;
+  transition:all var(--transition-fast);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.category-chip:active{transform:scale(0.95)}
+.category-chip.active{
+  background:var(--tiktok-red);
+  color:#fff;
+}
+.category-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;padding:0 5px;
+  background:rgba(255,255,255,0.2);
+  border-radius:9px;font-size:10px;font-weight:700;
+  margin-left:6px;
+}
+.category-chip.active .category-count{background:rgba(255,255,255,0.25)}
+
+/* ===== FEED CONTAINER ===== */
+#feed{
+  width:100%;
+  height:calc(100vh - var(--nav-height) - var(--safe-bottom));
+  height:calc(100dvh - var(--nav-height) - var(--safe-bottom));
+  margin-top:var(--header-height);
+  overflow-y:auto;
+  scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#feed::-webkit-scrollbar{display:none}
+
+/* Grid mode for wider screens */
+@media(min-width:768px){
+  #feed{
+    scroll-snap-type:none;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:2px;
+    padding:0;
+    background:rgba(255,255,255,0.03);
+  }
+}
+@media(min-width:1200px){
+  #feed{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+/* ===== TIKTOK CARD ===== */
+.tiktok-card{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  background:#111;
+  overflow:hidden;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  cursor:pointer;
+}
+@media(min-width:768px){
+  .tiktok-card{
+    height:auto;
+    min-height:420px;
+    max-height:calc(100vh - var(--nav-height) - var(--header-height));
+    scroll-snap-align:none;
+    scroll-snap-stop:auto;
+    border-radius:0;
+    aspect-ratio:9/14;
+  }
+}
+
+/* Card media container */
+.card-media{
+  position:absolute;inset:0;
+  background:#0a0a0a;
+  overflow:hidden;
+}
+.card-media img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:opacity 0.4s ease;
+}
+.card-media img.lazy-loaded{
+  opacity:1;
+}
+
+/* Video styles */
+.tiktok-card-video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  background:#000;
+}
+
+/* Video badge */
+.card-video-badge{
+  position:absolute;
+  top:64px;left:50%;
+  transform:translateX(-50%);
+  z-index:5;
+  padding:4px 12px;
+  background:rgba(254,44,85,0.85);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-radius:20px;
+  color:white;
+  font-size:10px;font-weight:700;
+  letter-spacing:0.1em;
+  display:flex;align-items:center;gap:4px;
+  pointer-events:none;
+}
+
+/* Brand badge */
+.card-brand-badge{
+  position:absolute;top:12px;left:12px;z-index:5;
+  padding:4px 10px;
+  background:rgba(0,0,0,0.65);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-radius:6px;
+  font-size:11px;font-weight:700;
+  color:#fff;
+  letter-spacing:0.02em;
+  max-width:140px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Discount badge */
+.card-discount-badge{
+  position:absolute;top:12px;right:12px;z-index:5;
+  padding:4px 10px;
+  background:var(--tiktok-red);
+  border-radius:6px;
+  font-size:12px;font-weight:800;
+  color:#fff;
+}
+
+/* Gradient overlay */
+.card-gradient{
+  position:absolute;bottom:0;left:0;right:0;
+  height:55%;
+  background:linear-gradient(to top,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.6) 40%,transparent 100%);
+  z-index:2;
+  pointer-events:none;
+}
+
+/* Side action buttons */
+.card-actions{
+  position:absolute;
+  right:10px;bottom:140px;
+  z-index:10;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+.card-action-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  -webkit-tap-highlight-color:transparent;
+}
+.card-action-icon{
+  width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  transition:transform var(--transition-fast),background var(--transition-fast);
+}
+.card-action-icon:active{transform:scale(0.9)}
+.card-action-icon svg{width:24px;height:24px}
+.card-action-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.8)}
+.card-action-btn.liked .card-action-icon{color:var(--tiktok-red)}
+.card-action-btn.liked .card-action-icon svg{fill:var(--tiktok-red);stroke:var(--tiktok-red)}
+.card-action-btn.view .card-action-icon{background:rgba(29,161,242,0.3)}
+.card-action-btn.view .card-action-icon svg{fill:#1DA1F2;stroke:#1DA1F2}
+
+/* Like animation */
+@keyframes likePopIn{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.3)}
+  60%{transform:scale(0.9)}
+  100%{transform:scale(1)}
+}
+.card-action-btn.like-anim .card-action-icon{
+  animation:likePopIn 0.4s ease;
+}
+
+/* Card info */
+.card-info{
+  position:absolute;bottom:0;left:0;right:70px;
+  z-index:5;
+  padding:12px 14px 60px;
+}
+@media(min-width:768px){
+  .card-info{right:14px;padding-bottom:60px}
+}
+.card-info-brand{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:4px}
+.card-info-name{
+  font-size:14px;font-weight:600;
+  line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;
+  margin-bottom:6px;
+}
+.card-info-variant{
+  font-size:12px;color:var(--text-muted);margin-bottom:6px;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-info-price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card-info-final-price{font-size:17px;font-weight:800;color:var(--tiktok-red)}
+.card-info-original-price{
+  font-size:12px;color:var(--text-muted);
+  text-decoration:line-through;
+}
+.card-info-disc-pct{
+  font-size:11px;font-weight:700;
+  color:var(--tiktok-red);
+  background:rgba(254,44,85,0.15);
+  padding:2px 6px;border-radius:4px;
+}
+
+/* CTA button on card */
+.card-cta{
+  position:absolute;
+  bottom:12px;left:14px;right:70px;
+  z-index:10;
+}
+@media(min-width:768px){
+  .card-cta{right:14px;bottom:14px}
+}
+.card-cta-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;height:38px;
+  background:var(--cta-blue);
+  border-radius:8px;
+  font-size:13px;font-weight:700;
+  color:#fff;
+  transition:opacity var(--transition-fast),transform var(--transition-fast);
+}
+.card-cta-btn:active{transform:scale(0.97);opacity:0.9}
+.card-cta-btn svg{width:18px;height:18px;flex-shrink:0}
+
+/* ===== SCROLL INDICATOR ===== */
+#scroll-indicator{
+  position:fixed;
+  right:4px;
+  top:50%;transform:translateY(-50%);
+  z-index:80;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.scroll-dot{
+  width:5px;height:5px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.25);
+  transition:all 0.3s ease;
+}
+.scroll-dot.active{
+  background:#fff;
+  height:16px;
+  border-radius:3px;
+}
+@media(min-width:768px){#scroll-indicator{display:none}}
+
+/* ===== BOTTOM NAVIGATION ===== */
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  z-index:100;
+  background:rgba(0,0,0,0.95);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border-color);
+  display:flex;align-items:stretch;
+  height:var(--nav-height);
+  padding-bottom:var(--safe-bottom);
+}
+.nav-item{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;
+  transition:color var(--transition-fast);
+  color:var(--text-muted);
+  position:relative;
+}
+.nav-item.active{color:#fff}
+.nav-item svg{width:24px;height:24px}
+.nav-item-label{font-size:10px;font-weight:600}
+.nav-item.active .nav-item-label{font-weight:700}
+.nav-item:active{opacity:0.7}
+
+/* ===== TOAST ===== */
+#toast-container{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  z-index:300;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;
+}
+.toast{
+  padding:10px 20px;
+  background:rgba(40,40,40,0.95);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-radius:10px;
+  font-size:13px;font-weight:600;
+  color:#fff;
+  white-space:nowrap;
+  animation:toastIn 0.3s ease,toastOut 0.3s ease 2s forwards;
+  pointer-events:auto;
+  border:1px solid rgba(255,255,255,0.08);
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px)}}
+
+/* ===== ERROR / EMPTY STATES ===== */
+#error-state,#empty-state{
+  position:fixed;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;padding:40px 20px;
+  background:#000;
+  text-align:center;
+}
+#error-state.hidden,#empty-state.hidden{display:none}
+.state-icon{width:64px;height:64px;color:var(--text-muted);margin-bottom:4px}
+.state-title{font-size:18px;font-weight:700;color:#fff}
+.state-desc{font-size:14px;color:var(--text-secondary);line-height:1.5;max-width:300px}
+.state-btn{
+  margin-top:8px;
+  padding:12px 28px;
+  background:var(--tiktok-red);
+  border-radius:10px;
+  font-size:14px;font-weight:700;
+  color:#fff;
+  transition:opacity var(--transition-fast);
+}
+.state-btn:active{opacity:0.8}
+
+/* ===== PULSE PLAY BUTTON ===== */
+.pulse-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:4;
+  width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.5);
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+.tiktok-card:hover .pulse-play{opacity:1}
+.pulse-play svg{width:28px;height:28px;fill:#fff;margin-left:3px}
+
+/* ===== MISC ===== */
+.hidden{display:none!important}
+
+/* Skeleton loading for cards */
+.card-skeleton{
+  position:absolute;inset:0;
+  background:linear-gradient(110deg,#111 8%,#1a1a1a 18%,#111 33%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s linear infinite;
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+/* Product link overlay (transparent, for SEO/accessibility) */
+.card-link{
+  position:absolute;inset:0;z-index:1;
+  opacity:0;
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Memuat produk...</div>
+</div>
+
+<!-- Header -->
+<header id="header">
+  <div class="header-left">
+    <div class="header-logo">SIAP <span>Tablet</span> Shop</div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" id="sort-btn" aria-label="Urutkan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="8" y2="18"/><polyline points="15 15 18 18 21 15"/></svg>
+    </button>
+    <button class="header-btn" id="search-btn" aria-label="Cari">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Search Overlay -->
+<div id="search-overlay">
+  <div class="search-header">
+    <button class="search-back" id="search-close-btn" aria-label="Tutup pencarian">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Cari tablet...">
+    </div>
+  </div>
+  <div class="search-results" id="search-results"></div>
+</div>
+
+<!-- Sort Bottom Sheet -->
+<div id="sort-overlay"></div>
+<div id="sort-sheet">
+  <div class="sort-handle"></div>
+  <div class="sort-title">Urutkan Produk</div>
+  <button class="sort-option active" data-sort="default">
+    <span>Default</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FE2C55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+  <button class="sort-option" data-sort="price-asc">
+    <span>Harga: Rendah ke Tinggi</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FE2C55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+  <button class="sort-option" data-sort="price-desc">
+    <span>Harga: Tinggi ke Rendah</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FE2C55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+  <button class="sort-option" data-sort="discount">
+    <span>Diskon Terbesar</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FE2C55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+  <button class="sort-option" data-sort="name">
+    <span>Nama: A - Z</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FE2C55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+  <button class="sort-cancel" id="sort-cancel-btn">Batal</button>
+</div>
+
+<!-- Category Bar -->
+<div id="category-bar">
+  <div class="category-scroll" id="category-scroll"></div>
+</div>
+
+<!-- Scroll Indicator -->
+<div id="scroll-indicator"></div>
+
+<!-- Feed Container -->
+<main id="feed" role="main" aria-label="Product feed"></main>
+
+<!-- Bottom Navigation -->
+<nav id="bottom-nav" role="navigation" aria-label="Main navigation">
+  <button class="nav-item active" data-nav="home" aria-label="Beranda">
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <span class="nav-item-label">Beranda</span>
+  </button>
+  <button class="nav-item" data-nav="category" aria-label="Kategori">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-item-label">Kategori</span>
+  </button>
+  <button class="nav-item" data-nav="search" aria-label="Cari">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-item-label">Cari</span>
+  </button>
+  <button class="nav-item" data-nav="favorite" aria-label="Favorit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span class="nav-item-label">Favorit</span>
+  </button>
+  <button class="nav-item" data-nav="admin" aria-label="Admin">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="nav-item-label">Admin</span>
+  </button>
+</nav>
+
+<!-- Error State -->
+<div id="error-state" class="hidden">
+  <svg class="state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="state-title">Gagal Memuat Data</div>
+  <div class="state-desc" id="error-message">Periksa koneksi internet Anda dan coba lagi.</div>
+  <button class="state-btn" onclick="resetAll()">Coba Lagi</button>
+</div>
+
+<!-- Empty State -->
+<div id="empty-state" class="hidden">
+  <svg class="state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <div class="state-title">Tidak Ada Produk</div>
+  <div class="state-desc">Produk tidak ditemukan. Coba kata kunci lain atau ubah filter.</div>
+  <button class="state-btn" onclick="resetAll()">Reset Filter</button>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+// ===== FIREBASE CONFIGURATION =====
+// 👇 Ganti dengan konfigurasi Firebase kamu dari Firebase Console
+//    Buka: https://console.firebase.google.com → Project Settings → Your apps → Config
+const FIREBASE_CONFIG = {
+  apiKey: ""AIzaSyDFadEnVo9fX64tw7uDTzT0ESoE5JAcx6c",
+  authDomain: "aplikasi-siap-ef85e.firebaseapp.com",
+  databaseURL: "https://aplikasi-siap-ef85e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "aplikasi-siap-ef85e",
+  storageBucket: "aplikasi-siap-ef85e.firebasestorage.app",
+  messagingSenderId: ""209198927274",
+  appId: "1:209198927274:web:f29bb8b1c39506bf8b6fd3"
+};
+
+// ===== FIREBASE INIT =====
+let firebaseDB = null;
+let firebaseReady = false;
+
+function initFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    firebaseDB = firebase.database();
+    firebaseReady = true;
+    console.log('[Firebase] ✅ Terhubung');
+    loadFirebaseData();
+  } catch (err) {
+    console.warn('[Firebase] ⚠️ Gagal terhubung:', err.message);
+    console.warn('[Firebase] Menggunakan localStorage sebagai fallback');
+    loadLocalData();
+  }
+}
+
+// ===== FIREBASE: SIMPAN & MUAT LIKES & BOOKMARKS =====
+function getDeviceId() {
+  let id = localStorage.getItem('siap_device_id');
+  if (!id) {
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('siap_device_id', id);
+  }
+  return id;
+}
+
+function saveLikesToFirebase() {
+  const data = Array.from(likedProducts);
+  if (firebaseReady) {
+    firebaseDB.ref('users/' + getDeviceId() + '/likes').set(data);
+  }
+  localStorage.setItem('siap_liked', JSON.stringify(data));
+}
+
+function saveBookmarksToFirebase() {
+  const data = Array.from(bookmarkedProducts);
+  if (firebaseReady) {
+    firebaseDB.ref('users/' + getDeviceId() + '/bookmarks').set(data);
+  }
+  localStorage.setItem('siap_bookmarked', JSON.stringify(data));
+}
+
+function loadFirebaseData() {
+  const deviceId = getDeviceId();
+  // Load likes
+  firebaseDB.ref('users/' + deviceId + '/likes').once('value')
+    .then(snap => {
+      const data = snap.val();
+      if (data && Array.isArray(data)) {
+        likedProducts = new Set(data);
+        console.log('[Firebase] ❤️ Likes dimuat:', data.length);
+      }
+    })
+    .catch(() => loadLocalLikes());
+
+  // Load bookmarks
+  firebaseDB.ref('users/' + deviceId + '/bookmarks').once('value')
+    .then(snap => {
+      const data = snap.val();
+      if (data && Array.isArray(data)) {
+        bookmarkedProducts = new Set(data);
+        console.log('[Firebase] 🔖 Bookmarks dimuat:', data.length);
+      }
+    })
+    .catch(() => loadLocalBookmarks());
+}
+
+function loadLocalData() {
+  loadLocalLikes();
+  loadLocalBookmarks();
+}
+
+function loadLocalLikes() {
+  try {
+    const data = JSON.parse(localStorage.getItem('siap_liked') || '[]');
+    likedProducts = new Set(data);
+  } catch (e) {}
+}
+
+function loadLocalBookmarks() {
+  try {
+    const data = JSON.parse(localStorage.getItem('siap_bookmarked') || '[]');
+    bookmarkedProducts = new Set(data);
+  } catch (e) {}
+}
+
+// ===== CONFIGURATION =====
+const CONFIG = {
+  spreadsheetId: '1AVLkK-m_moi8mXjmunw3adlmPhelXqow',
+  gid: '2146114421',
+  csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9-bTM9z7Fpx0t93QLt355DyWkoIIVpqb5gEsz84cYzweI4WJLd5SZZU-YeIuzcw/pub?gid=2146114421&single=true&output=csv',
+  itemsPerPage: 30,
+  currency: 'Rp',
+  debounceMs: 200,
+  whatsappNumber: '',
+  fetchTimeout: 10000,
+};
+
+const COL = {
+  NAMA_PRODUK: 0, DESKRIPSI_PANJANG: 1, DESKRIPSI_PENDEK: 2,
+  LINK_SUMBER: 3, EMPTY: 4, NAMA_VAR_1: 5, OPSI_VAR_1: 6,
+  NAMA_VAR_2: 7, OPSI_VAR_2: 8, NAMA_VAR_3: 9, OPSI_VAR_3: 10,
+  HARGA: 11, DISKON: 12, MATA_UANG: 13, STOK: 14, SKU: 15,
+  BERAT: 16, PANJANG: 17, LEBAR: 18, TINGGI: 19,
+  FOTO_1: 20, FOTO_2: 21, FOTO_3: 22, FOTO_4: 23, FOTO_5: 24,
+  FOTO_6: 25, FOTO_7: 26, FOTO_8: 27, FOTO_9: 28,
+  GAMBAR_VAR_1: 29, GAMBAR_VAR_2: 30,
+};
+
+const SAMPLE_VIDEOS = {
+  0: 'videos/tablet-showcase-1.mp4',
+  1: 'videos/tablet-showcase-2.mp4',
+  2: 'videos/tablet-showcase-3.mp4',
+  3: 'videos/tablet-showcase-4.mp4',
+  4: 'videos/tablet-showcase-5.mp4',
+};
+
+// ===== STATE =====
+let allProducts = [];
+let filteredProducts = [];
+let displayProducts = [];
+let currentCategory = 'Semua';
+let currentSort = 'default';
+let currentPage = 1;
+let likedProducts = new Set();
+let bookmarkedProducts = new Set();
+let activeCardIndex = 0;
+let searchDebounceTimer = null;
+let categoryBarVisible = false;
+let isLoading = false;
+let isLoaded = false;
+
+// ===== DOM ELEMENTS =====
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+// ===== UTILITY FUNCTIONS =====
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+function stripHtml(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+function parsePrice(priceStr) {
+  if (!priceStr) return 0;
+  const cleaned = String(priceStr).replace(/[^0-9,-]/g, '').replace(',', '.');
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+}
+
+function formatPrice(price) {
+  if (!price && price !== 0) return '';
+  return CONFIG.currency + ' ' + Math.round(price).toLocaleString('id-ID');
+}
+
+// ===== BRAND EXTRACTION =====
+const BRAND_LIST = [
+  'Samsung','Xiaomi','Advan','Realme','Oppo','Vivo','Lenovo','Huawei','Asus','Acer',
+  'Nokia','iPad','Apple','Teclast','Infinix','Itel','Alldocube','Chuwi','PiPO','Cube',
+  'Microsoft','Google','Sony','LG','HTC','BlackBerry','Motorola','OnePlus',
+  'Anaktek','ANAKTEK','Atomu','atomu','Maxtron','Spc','SPC','Mito','Evercoss',
+  'Strawberry','iCherry','Icherry'
+];
+
+function extractBrand(name) {
+  if (!name) return 'Tablet';
+  const n = name.toLowerCase();
+  for (const brand of BRAND_LIST) {
+    if (n.includes(brand.toLowerCase())) {
+      return brand;
+    }
+  }
+  return 'Tablet';
+}
+
+// ===== CATEGORY EXTRACTION =====
+function extractCategories(products) {
+  const cats = {};
+  cats['Semua'] = 0;
+  for (const p of products) {
+    if (p._hidden) continue;
+    const brand = p.brand || 'Lainnya';
+    if (!cats[brand]) cats[brand] = 0;
+    cats[brand]++;
+  }
+  return Object.entries(cats)
+    .sort((a, b) => {
+      if (a[0] === 'Semua') return -1;
+      if (b[0] === 'Semua') return 1;
+      return b[1] - a[1];
+    });
+}
+
+function getCategoryCount(category) {
+  if (category === 'Semua') return allProducts.filter(p => !p._hidden).length;
+  return allProducts.filter(p => !p._hidden && p.brand === category).length;
+}
+
+// ===== WHATSAPP LINK =====
+function createWhatsAppLink(product) {
+  const msg = `Halo, saya tertarik dengan:\n\n${product.name}\nHarga: ${formatPrice(product.finalPrice)}${product.hasDiscount ? ' (Diskon ' + product.discountPercent + '%)' : ''}\n\nApakah tersedia?`;
+  let phone = CONFIG.whatsappNumber || '';
+  if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+  if (phone.startsWith('+')) phone = phone.substring(1);
+  if (!phone) {
+    return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
+
+// ===== SEMBUNYIKAN DUPLIKAT BERDASARKAN GAMBAR =====
+function hideDuplicateImages() {
+  const seenImages = new Map();
+  for (const product of allProducts) {
+    const img = (product.image || '').trim().toLowerCase();
+    if (!img) continue;
+    if (seenImages.has(img)) {
+      product._hidden = true;
+      console.log(`[Duplikat] Disembunyikan: "${product.name}" (gambar sama dengan "${seenImages.get(img)}")`);
+    } else {
+      seenImages.set(img, product.name);
+      product._hidden = false;
+    }
+  }
+  const hiddenCount = allProducts.filter(p => p._hidden).length;
+  if (hiddenCount > 0) {
+    console.log(`[Dedup] ${hiddenCount} produk duplikat disembunyikan. Tersisa: ${allProducts.length - hiddenCount} produk.`);
+  }
+}
+
+// ===== DATA LOADING =====
+async function loadData() {
+  showLoading();
+  try {
+    await loadViaJSONP();
+    if (allProducts.length === 0) {
+      await loadViaFetch();
+    }
+    if (allProducts.length === 0) {
+      showError('Tidak ada produk yang ditemukan di spreadsheet.');
+      return;
+    }
+    // Sembunyikan produk duplikat berdasarkan gambar yang sama
+    hideDuplicateImages();
+    isLoaded = true;
+    hideLoading();
+    renderCategories();
+    filterProducts();
+  } catch (err) {
+    console.error('Load error:', err);
+    showError('Gagal memuat data: ' + (err.message || 'Unknown error'));
+  }
+}
+
+function loadViaJSONP() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callbackName = 'gvizCallback_' + Date.now();
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, CONFIG.fetchTimeout);
+
+    // Declare variable BEFORE cleanup to avoid TDZ
+    let cleanedUp = false;
+
+    function cleanup() {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = function (response) {
+      cleanup();
+      try {
+        if (response.status === 'ok' && response.table && response.table.rows) {
+          const rows = response.table.rows;
+          for (let i = 0; i < rows.length; i++) {
+            const r = rows[i].c;
+            if (!r || !r[COL.NAMA_PRODUK] || !r[COL.NAMA_PRODUK].v) continue;
+            const name = stripHtml(r[COL.NAMA_PRODUK].v || '');
+            const desc = r[COL.DESKRIPSI_PENDEK] ? stripHtml(r[COL.DESKRIPSI_PENDEK].v || '') : '';
+            const priceRaw = r[COL.HARGA] ? (r[COL.HARGA].v || '') : '';
+            const discountRaw = r[COL.DISKON] ? (r[COL.DISKON].v || '0') : '0';
+            const link = r[COL.LINK_SUMBER] ? (r[COL.LINK_SUMBER].v || '') : '';
+            const image = r[COL.FOTO_1] ? (r[COL.FOTO_1].v || '') : '';
+            const rawName = name;
+
+            let originalPrice = parsePrice(priceRaw);
+            let discountPercent = parsePrice(discountRaw);
+            if (discountPercent > 100) discountPercent = 100;
+            let finalPrice = originalPrice;
+            if (discountPercent > 0) {
+              finalPrice = originalPrice - (originalPrice * discountPercent / 100);
+            }
+
+            let variant = '';
+            if (r[COL.NAMA_VAR_1] && r[COL.NAMA_VAR_1].v && r[COL.OPSI_VAR_1] && r[COL.OPSI_VAR_1].v) {
+              variant += stripHtml(r[COL.NAMA_VAR_1].v) + ': ' + stripHtml(r[COL.OPSI_VAR_1].v);
+            }
+            if (r[COL.NAMA_VAR_2] && r[COL.NAMA_VAR_2].v && r[COL.OPSI_VAR_2] && r[COL.OPSI_VAR_2].v) {
+              if (variant) variant += ' / ';
+              variant += stripHtml(r[COL.NAMA_VAR_2].v) + ': ' + stripHtml(r[COL.OPSI_VAR_2].v);
+            }
+
+            allProducts.push({
+              id: i,
+              name: name,
+              description: desc,
+              originalPrice: originalPrice,
+              finalPrice: finalPrice,
+              discountPercent: discountPercent,
+              hasDiscount: discountPercent > 0,
+              image: image,
+              video: SAMPLE_VIDEOS[i] || '',
+              link: link,
+              brand: extractBrand(name),
+              variant: variant,
+              rawName: rawName,
+            });
+          }
+        }
+      } catch (e) {
+        console.error('JSONP parse error:', e);
+      }
+      resolve();
+    };
+
+    script.src = `https://docs.google.com/spreadsheets/d/${CONFIG.spreadsheetId}/gviz/tq?gid=${CONFIG.gid}&tqx=out:json;responseHandler:${callbackName}`;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('JSONP script error'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+async function loadViaFetch() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CONFIG.fetchTimeout);
+  try {
+    const response = await fetch(CONFIG.csvUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    const rows = parseCSV(text);
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[COL.NAMA_PRODUK]) continue;
+      const name = stripHtml(r[COL.NAMA_PRODUK] || '');
+      if (!name) continue;
+      const desc = stripHtml(r[COL.DESKRIPSI_PENDEK] || '');
+      const priceRaw = r[COL.HARGA] || '';
+      const discountRaw = r[COL.DISKON] || '0';
+      const link = r[COL.LINK_SUMBER] || '';
+      const image = r[COL.FOTO_1] || '';
+      const rawName = name;
+
+      let originalPrice = parsePrice(priceRaw);
+      let discountPercent = parsePrice(discountRaw);
+      if (discountPercent > 100) discountPercent = 100;
+      let finalPrice = originalPrice;
+      if (discountPercent > 0) {
+        finalPrice = originalPrice - (originalPrice * discountPercent / 100);
+      }
+
+      let variant = '';
+      if (r[COL.NAMA_VAR_1] && r[COL.OPSI_VAR_1]) {
+        variant += stripHtml(r[COL.NAMA_VAR_1]) + ': ' + stripHtml(r[COL.OPSI_VAR_1]);
+      }
+      if (r[COL.NAMA_VAR_2] && r[COL.OPSI_VAR_2]) {
+        if (variant) variant += ' / ';
+        variant += stripHtml(r[COL.NAMA_VAR_2]) + ': ' + stripHtml(r[COL.OPSI_VAR_2]);
+      }
+
+      allProducts.push({
+        id: i,
+        name: name,
+        description: desc,
+        originalPrice: originalPrice,
+        finalPrice: finalPrice,
+        discountPercent: discountPercent,
+        hasDiscount: discountPercent > 0,
+        image: image,
+        video: SAMPLE_VIDEOS[i] || '',
+        link: link,
+        brand: extractBrand(name),
+        variant: variant,
+        rawName: rawName,
+      });
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let currentRow = [];
+  let currentField = '';
+  let inQuotes = false;
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < text.length && text[i + 1] === '"') {
+          currentField += '"';
+          i += 2;
+          continue;
+        } else {
+          inQuotes = false;
+          i++;
+          continue;
+        }
+      } else {
+        currentField += ch;
+        i++;
+        continue;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+        i++;
+        continue;
+      } else if (ch === ',') {
+        currentRow.push(currentField);
+        currentField = '';
+        i++;
+        continue;
+      } else if (ch === '\r') {
+        if (i + 1 < text.length && text[i + 1] === '\n') i++;
+        currentRow.push(currentField);
+        currentField = '';
+        rows.push(currentRow);
+        currentRow = [];
+        i++;
+        continue;
+      } else if (ch === '\n') {
+        currentRow.push(currentField);
+        currentField = '';
+        rows.push(currentRow);
+        currentRow = [];
+        i++;
+        continue;
+      } else {
+        currentField += ch;
+        i++;
+        continue;
+      }
+    }
+  }
+  // last field/row
+  if (currentField || currentRow.length > 0) {
+    currentRow.push(currentField);
+    rows.push(currentRow);
+  }
+  return rows;
+}
+
+// ===== SHUFFLE (RANDOMIZE) =====
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ===== FILTERING & SORTING =====
+function filterProducts() {
+  hideEmpty();
+  hideError();
+  if (currentCategory === 'Semua') {
+    filteredProducts = allProducts.filter(p => !p._hidden);
+  } else {
+    filteredProducts = allProducts.filter(p => !p._hidden && p.brand === currentCategory);
+  }
+  handleSort();
+}
+
+function handleSort() {
+  switch (currentSort) {
+    case 'price-asc':
+      filteredProducts.sort((a, b) => a.finalPrice - b.finalPrice);
+      break;
+    case 'price-desc':
+      filteredProducts.sort((a, b) => b.finalPrice - a.finalPrice);
+      break;
+    case 'discount':
+      filteredProducts.sort((a, b) => b.discountPercent - a.discountPercent);
+      break;
+    case 'name':
+      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    default:
+      // Random/shuffle order
+      shuffleArray(filteredProducts);
+      break;
+  }
+  currentPage = 1;
+  renderProducts();
+}
+
+// ===== RENDER: CATEGORIES =====
+function renderCategories() {
+  const cats = extractCategories(allProducts);
+  const container = $('#category-scroll');
+  container.innerHTML = '';
+  cats.forEach(([cat, count]) => {
+    const chip = document.createElement('button');
+    chip.className = 'category-chip' + (cat === currentCategory ? ' active' : '');
+    chip.innerHTML = `${escapeHtml(cat)}<span class="category-count">${count}</span>`;
+    chip.addEventListener('click', () => selectCategory(cat));
+    container.appendChild(chip);
+  });
+}
+
+function selectCategory(cat) {
+  currentCategory = cat;
+  // Update chip styles
+  $$('.category-chip').forEach(c => {
+    const catName = c.textContent.replace(/\d+/g, '').trim();
+    if (catName === cat) {
+      c.classList.add('active');
+    } else {
+      c.classList.remove('active');
+    }
+  });
+  filterProducts();
+  // Scroll feed to top
+  const feed = $('#feed');
+  if (feed) feed.scrollTop = 0;
+}
+
+// ===== RENDER: PRODUCTS =====
+function renderProducts() {
+  const feed = $('#feed');
+  if (!feed) return;
+
+  if (filteredProducts.length === 0) {
+    feed.innerHTML = '';
+    showEmpty();
+    return;
+  }
+
+  hideEmpty();
+  feed.innerHTML = '';
+
+  const start = 0;
+  const end = filteredProducts.length;
+
+  for (let i = start; i < end; i++) {
+    const card = createTikTokCard(filteredProducts[i], i);
+    feed.appendChild(card);
+  }
+
+  activeCardIndex = 0;
+  renderScrollIndicator();
+  setupLazyLoading();
+  setupScrollListener();
+}
+
+function createTikTokCard(product, index) {
+  const card = document.createElement('div');
+  card.className = 'tiktok-card';
+  card.dataset.index = index;
+  card.dataset.id = product.id;
+
+  const liked = likedProducts.has(product.id);
+  const bookmarked = bookmarkedProducts.has(product.id);
+  const productLink = product.link || '#';
+  const hasLink = product.link && product.link.length > 3;
+
+  // Build media HTML
+  let mediaHtml = '';
+  if (product.video) {
+    mediaHtml = `
+      <video class="tiktok-card-video" autoplay muted loop playsinline preload="metadata" poster="${escapeHtml(product.image)}">
+        <source src="${escapeHtml(product.video)}" type="video/mp4">
+      </video>
+      <div class="pulse-play">
+        <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      </div>
+    `;
+  } else if (product.image) {
+    mediaHtml = `<img data-src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" class="lazy-img" loading="lazy">`;
+  } else {
+    mediaHtml = `<div class="card-skeleton"></div>`;
+  }
+
+  // Video badge
+  let videoBadge = '';
+  if (product.video) {
+    videoBadge = `<div class="card-video-badge">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+      VIDEO
+    </div>`;
+  }
+
+  // Discount badge
+  let discountBadge = '';
+  if (product.hasDiscount) {
+    discountBadge = `<div class="card-discount-badge">-${Math.round(product.discountPercent)}%</div>`;
+  }
+
+  // Price info
+  let priceHtml = '';
+  if (product.hasDiscount) {
+    priceHtml = `
+      <span class="card-info-final-price">${formatPrice(product.finalPrice)}</span>
+      <span class="card-info-original-price">${formatPrice(product.originalPrice)}</span>
+      <span class="card-info-disc-pct">-${Math.round(product.discountPercent)}%</span>
+    `;
+  } else {
+    priceHtml = `<span class="card-info-final-price">${formatPrice(product.finalPrice)}</span>`;
+  }
+
+  // Variant
+  let variantHtml = product.variant ? `<div class="card-info-variant">${escapeHtml(product.variant)}</div>` : '';
+
+  // Product link (hidden but accessible)
+  let linkOverlay = '';
+  if (product.link) {
+    linkOverlay = `<a href="${escapeHtml(product.link)}" class="card-link" target="_blank" rel="noopener" aria-label="${escapeHtml(product.name)}"></a>`;
+  }
+
+  card.innerHTML = `
+    ${linkOverlay}
+    <div class="card-media">
+      ${mediaHtml}
+    </div>
+    <div class="card-brand-badge">${escapeHtml(product.brand)}</div>
+    ${videoBadge}
+    ${discountBadge}
+    <div class="card-gradient"></div>
+    <div class="card-actions">
+      <div class="card-action-btn ${liked ? 'liked' : ''}" data-action="like" data-id="${product.id}">
+        <div class="card-action-icon">
+          <svg viewBox="0 0 24 24" fill="${liked ? '#FE2C55' : 'none'}" stroke="${liked ? '#FE2C55' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <span class="card-action-label">Suka</span>
+      </div>
+      <a class="card-action-btn view" href="${escapeHtml(productLink)}" target="_blank" rel="noopener" data-action="viewproduct" aria-label="Lihat Produk">
+        <div class="card-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1DA1F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </div>
+        <span class="card-action-label">Lihat</span>
+      </a>
+      <div class="card-action-btn" data-action="share" data-id="${product.id}" data-name="${escapeHtml(product.name)}" data-link="${escapeHtml(product.link)}">
+        <div class="card-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </div>
+        <span class="card-action-label">Bagikan</span>
+      </div>
+      <div class="card-action-btn ${bookmarked ? 'liked' : ''}" data-action="bookmark" data-id="${product.id}">
+        <div class="card-action-icon">
+          <svg viewBox="0 0 24 24" fill="${bookmarked ? '#FFC107' : 'none'}" stroke="${bookmarked ? '#FFC107' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="card-action-label">Simpan</span>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="card-info-brand">@${escapeHtml(product.brand.toLowerCase())}</div>
+      <div class="card-info-name">${escapeHtml(product.name)}</div>
+      ${variantHtml}
+      <div class="card-info-price">${priceHtml}</div>
+    </div>
+    <div class="card-cta">
+      <a class="card-cta-btn" href="${escapeHtml(productLink)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="white" stroke="none" width="18" height="18"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Lihat Produk
+      </a>
+    </div>
+  `;
+
+  // Event delegation for action buttons
+  card.addEventListener('click', (e) => {
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const action = actionBtn.dataset.action;
+      const id = parseInt(actionBtn.dataset.id);
+      if (action === 'like') toggleLike(id, actionBtn);
+      else if (action === 'share') shareProduct(actionBtn.dataset.name, actionBtn.dataset.link);
+      else if (action === 'bookmark') bookmarkProduct(id, actionBtn);
+      else if (action === 'viewproduct') {
+        window.open(actionBtn.href, '_blank');
+      }
+    }
+  });
+
+  return card;
+}
+
+// ===== LAZY LOADING & INTERSECTION OBSERVER =====
+let lazyObserver = null;
+let cardVisibilityObserver = null;
+
+function setupLazyLoading() {
+  // Clean up previous observers
+  if (lazyObserver) lazyObserver.disconnect();
+  if (cardVisibilityObserver) cardVisibilityObserver.disconnect();
+
+  // Lazy load images
+  lazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          img.classList.add('lazy-loaded');
+          img.onload = () => img.classList.add('lazy-loaded');
+          img.onerror = () => {
+            img.style.display = 'none';
+          };
+        }
+        lazyObserver.unobserve(img);
+      }
+    });
+  }, { rootMargin: '200px' });
+
+  $$('.lazy-img').forEach(img => lazyObserver.observe(img));
+
+  // Track visible cards + video pause/play
+  cardVisibilityObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const card = entry.target;
+      const video = card.querySelector('.tiktok-card-video');
+      const idx = parseInt(card.dataset.index);
+
+      if (entry.isIntersecting) {
+        activeCardIndex = idx;
+        updateScrollIndicator();
+        // Play video when visible
+        if (video) {
+          video.play().catch(() => {});
+        }
+      } else {
+        // Pause video when not visible
+        if (video) {
+          video.pause();
+        }
+      }
+    });
+  }, {
+    root: $('#feed'),
+    threshold: 0.6
+  });
+
+  $$('.tiktok-card').forEach(card => cardVisibilityObserver.observe(card));
+}
+
+// ===== SCROLL INDICATOR =====
+function renderScrollIndicator() {
+  const container = $('#scroll-indicator');
+  if (!container || window.innerWidth >= 768) {
+    if (container) container.innerHTML = '';
+    return;
+  }
+  const count = Math.min(filteredProducts.length, 15); // Max 15 dots
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'scroll-dot' + (i === 0 ? ' active' : '');
+    container.appendChild(dot);
+  }
+}
+
+function updateScrollIndicator() {
+  const dots = $$('.scroll-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === activeCardIndex);
+  });
+}
+
+function setupScrollListener() {
+  const feed = $('#feed');
+  if (!feed) return;
+
+  let scrollTimer = null;
+  feed.addEventListener('scroll', () => {
+    if (scrollTimer) return;
+    scrollTimer = setTimeout(() => {
+      scrollTimer = null;
+      // Determine active card based on scroll position
+      const cards = $$('.tiktok-card');
+      const feedRect = feed.getBoundingClientRect();
+      const center = feedRect.top + feedRect.height / 2;
+
+      let closest = 0;
+      let closestDist = Infinity;
+      cards.forEach((card, i) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+        const dist = Math.abs(cardCenter - center);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = i;
+        }
+      });
+      activeCardIndex = closest;
+      updateScrollIndicator();
+
+      // Header solid state
+      const header = $('#header');
+      if (feed.scrollTop > 10) {
+        header.classList.add('solid');
+      } else {
+        header.classList.remove('solid');
+      }
+    }, 50);
+  }, { passive: true });
+}
+
+// ===== ACTION HANDLERS =====
+function toggleLike(id, btn) {
+  if (likedProducts.has(id)) {
+    likedProducts.delete(id);
+    btn.classList.remove('liked');
+    const svg = btn.querySelector('svg');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+  } else {
+    likedProducts.add(id);
+    btn.classList.add('liked');
+    btn.classList.add('like-anim');
+    const svg = btn.querySelector('svg');
+    svg.setAttribute('fill', '#FE2C55');
+    svg.setAttribute('stroke', '#FE2C55');
+    setTimeout(() => btn.classList.remove('like-anim'), 400);
+    showToast('❤️ Ditambahkan ke Suka');
+  }
+  saveLikesToFirebase();
+}
+
+function shareProduct(name, link) {
+  const text = `Lihat produk ini: ${name}\n${link || window.location.href}`;
+  if (navigator.share) {
+    navigator.share({ title: name, text: text, url: link || window.location.href })
+      .catch(() => {});
+  } else {
+    // Fallback: copy to clipboard
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 Link disalin ke clipboard');
+      }).catch(() => {
+        showToast('Gagal menyalin link');
+      });
+    } else {
+      showToast('Browser tidak mendukung sharing');
+    }
+  }
+}
+
+function bookmarkProduct(id, btn) {
+  if (bookmarkedProducts.has(id)) {
+    bookmarkedProducts.delete(id);
+    btn.classList.remove('liked');
+    const svg = btn.querySelector('svg');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    showToast('Dihapus dari Simpan');
+  } else {
+    bookmarkedProducts.add(id);
+    btn.classList.add('liked');
+    const svg = btn.querySelector('svg');
+    svg.setAttribute('fill', '#FFC107');
+    svg.setAttribute('stroke', '#FFC107');
+    showToast('🔖 Disimpan');
+  }
+  saveBookmarksToFirebase();
+}
+
+// ===== SEARCH =====
+function openSearch() {
+  const overlay = $('#search-overlay');
+  overlay.classList.add('open');
+  const input = $('#search-input');
+  setTimeout(() => input.focus(), 350);
+  renderSearchResults('');
+}
+
+function closeSearch() {
+  const overlay = $('#search-overlay');
+  overlay.classList.remove('open');
+  const input = $('#search-input');
+  input.value = '';
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+}
+
+function renderSearchResults(query) {
+  const container = $('#search-results');
+  if (!query || query.trim().length < 2) {
+    container.innerHTML = '<div class="search-empty">Ketik minimal 2 karakter untuk mencari</div>';
+    return;
+  }
+  const q = query.toLowerCase().trim();
+  const results = allProducts.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    p.brand.toLowerCase().includes(q) ||
+    p.description.toLowerCase().includes(q) ||
+    (p.variant && p.variant.toLowerCase().includes(q))
+  ).slice(0, 20);
+
+  if (results.length === 0) {
+    container.innerHTML = '<div class="search-empty">Tidak ada produk yang cocok dengan "' + escapeHtml(query) + '"</div>';
+    return;
+  }
+
+  container.innerHTML = results.map(p => `
+    <a class="search-result-item" href="${escapeHtml(p.link || '#')}" target="_blank" rel="noopener" data-id="${p.id}">
+      ${p.image ? `<img class="search-result-thumb" src="${escapeHtml(p.image)}" alt="" loading="lazy" onerror="this.style.background='#1a1a1a'">` : '<div class="search-result-thumb"></div>'}
+      <div class="search-result-info">
+        <div class="search-result-name">${escapeHtml(p.name)}</div>
+        <div class="search-result-price">${formatPrice(p.finalPrice)}</div>
+      </div>
+    </a>
+  `).join('');
+
+  // Add click handlers for navigating to product
+  container.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const id = parseInt(item.dataset.id);
+      // Find the card in the feed and scroll to it
+      closeSearch();
+      const card = $(`.tiktok-card[data-id="${id}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+}
+
+function setupSearchOverlayListener() {
+  const input = $('#search-input');
+  input.addEventListener('input', () => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      renderSearchResults(input.value);
+    }, CONFIG.debounceMs);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSearch();
+  });
+}
+
+// ===== SORT =====
+function openSort() {
+  $('#sort-overlay').classList.add('open');
+  $('#sort-sheet').classList.add('open');
+}
+
+function closeSort() {
+  $('#sort-overlay').classList.remove('open');
+  $('#sort-sheet').classList.remove('open');
+}
+
+function doSort(sortType) {
+  currentSort = sortType;
+  // Update active option
+  $$('.sort-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.sort === sortType);
+  });
+  closeSort();
+  handleSort();
+  const labels = {
+    'default': 'Default',
+    'price-asc': 'Harga: Rendah ke Tinggi',
+    'price-desc': 'Harga: Tinggi ke Rendah',
+    'discount': 'Diskon Terbesar',
+    'name': 'Nama: A - Z',
+  };
+  showToast('Diurutkan: ' + (labels[sortType] || sortType));
+}
+
+// ===== CATEGORY BAR TOGGLE =====
+function toggleCategoryBar() {
+  categoryBarVisible = !categoryBarVisible;
+  const bar = $('#category-bar');
+  if (categoryBarVisible) {
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ===== NAV SWITCH =====
+function switchNav(nav) {
+  // Update active nav
+  $$('.nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.nav === nav);
+  });
+
+  switch (nav) {
+    case 'home':
+      closeSearch();
+      closeSort();
+      if (categoryBarVisible) toggleCategoryBar();
+      currentCategory = 'Semua';
+      renderCategories();
+      filterProducts();
+      break;
+    case 'category':
+      toggleCategoryBar();
+      break;
+    case 'search':
+      openSearch();
+      break;
+    case 'favorite':
+      showToast('❤️ Fitur Favorit segera hadir!');
+      break;
+    case 'admin':
+      window.location.href = 'admin.html';
+      break;
+  }
+}
+
+// ===== TOAST =====
+function showToast(message) {
+  const container = $('#toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 2500);
+}
+
+// ===== LOADING / ERROR / EMPTY STATES =====
+function showLoading() {
+  isLoading = true;
+  $('#loading-overlay').classList.remove('hidden');
+}
+function hideLoading() {
+  isLoading = false;
+  $('#loading-overlay').classList.add('hidden');
+}
+function showError(msg) {
+  hideLoading();
+  const el = $('#error-state');
+  if (msg) $('#error-message').textContent = msg;
+  el.classList.remove('hidden');
+}
+function hideError() {
+  $('#error-state').classList.add('hidden');
+}
+function showEmpty() {
+  $('#empty-state').classList.remove('hidden');
+}
+function hideEmpty() {
+  $('#empty-state').classList.add('hidden');
+}
+
+function resetAll() {
+  hideError();
+  hideEmpty();
+  currentCategory = 'Semua';
+  currentSort = 'default';
+  currentPage = 1;
+  $$('.sort-option').forEach(opt => opt.classList.toggle('active', opt.dataset.sort === 'default'));
+  if (isLoaded) {
+    renderCategories();
+    filterProducts();
+  } else {
+    allProducts = [];
+    loadData();
+  }
+  const feed = $('#feed');
+  if (feed) feed.scrollTop = 0;
+}
+
+// ===== EVENT LISTENERS =====
+function initEventListeners() {
+  // Header buttons
+  $('#sort-btn').addEventListener('click', openSort);
+  $('#search-btn').addEventListener('click', openSearch);
+
+  // Search overlay
+  $('#search-close-btn').addEventListener('click', closeSearch);
+  $('#sort-overlay').addEventListener('click', closeSort);
+  $('#sort-cancel-btn').addEventListener('click', closeSort);
+
+  // Sort options
+  $$('.sort-option').forEach(opt => {
+    opt.addEventListener('click', () => doSort(opt.dataset.sort));
+  });
+
+  // Bottom nav
+  $$('.nav-item').forEach(item => {
+    item.addEventListener('click', () => switchNav(item.dataset.nav));
+  });
+
+  // Search
+  setupSearchOverlayListener();
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeSearch();
+      closeSort();
+    }
+  });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  initFirebase();
+  initEventListeners();
+  loadData();
+});
+</script>
+</body>
+</html>
