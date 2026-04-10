@@ -689,9 +689,9 @@ img,video{display:block;max-width:100%}
 <!-- Toast Container -->
 <div id="toast-container"></div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<!-- Firebase SDK (async, tidak memblokir loading) -->
+<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
 // ===== FIREBASE CONFIGURATION =====
@@ -710,9 +710,20 @@ const FIREBASE_CONFIG = {
 // ===== FIREBASE INIT =====
 let firebaseDB = null;
 let firebaseReady = false;
+const _isFirebaseConfigured = FIREBASE_CONFIG.apiKey !== "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
 function initFirebase() {
+  if (!_isFirebaseConfigured) {
+    console.warn('[Firebase] ⏭️ Config belum diisi, menggunakan localStorage');
+    loadLocalData();
+    return;
+  }
   try {
+    if (typeof firebase === 'undefined') {
+      console.warn('[Firebase] ⏭️ SDK belum dimuat, menggunakan localStorage');
+      loadLocalData();
+      return;
+    }
     if (!firebase.apps.length) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
@@ -722,7 +733,6 @@ function initFirebase() {
     loadFirebaseData();
   } catch (err) {
     console.warn('[Firebase] ⚠️ Gagal terhubung:', err.message);
-    console.warn('[Firebase] Menggunakan localStorage sebagai fallback');
     loadLocalData();
   }
 }
